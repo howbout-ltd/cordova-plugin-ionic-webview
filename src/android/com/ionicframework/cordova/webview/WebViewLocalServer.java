@@ -188,7 +188,7 @@ public class WebViewLocalServer {
     }
     return uri;
   }
-  
+
   private static WebResourceResponse createWebResourceResponse(String mimeType, String encoding, int statusCode, String reasonPhrase, Map<String, String> responseHeaders, InputStream data) {
     if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
       int finalStatusCode = statusCode;
@@ -245,7 +245,15 @@ public class WebViewLocalServer {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && request != null && request.getRequestHeaders().get("Range") != null) {
       InputStream responseStream = new LollipopLazyInputStream(handler, uri);
       String mimeType = getMimeType(path, responseStream);
-      Map<String, String> tempResponseHeaders = handler.getResponseHeaders();
+
+      // Make a deep clone of the response headers (Dunno why it neeeds this, but it does)
+      Map<String, String> responseHeaders = handler.getResponseHeaders();
+      HashMap<String, String> tempResponseHeaders = new HashMap<String, String>();
+      for (Map.Entry<String, String> entry : responseHeaders.entrySet())
+      {
+          tempResponseHeaders.put(entry.getKey(), entry.getValue());
+      }
+
       int statusCode = 206;
       try {
         int totalRange = responseStream.available();
